@@ -1,0 +1,6 @@
+framework module Pods_MVVM_Navigation_Swinject_Sourcery {
+  umbrella header "Pods-MVVM-Navigation-Swinject-Sourcery-umbrella.h"
+
+  export *
+  module * { export * }
+}

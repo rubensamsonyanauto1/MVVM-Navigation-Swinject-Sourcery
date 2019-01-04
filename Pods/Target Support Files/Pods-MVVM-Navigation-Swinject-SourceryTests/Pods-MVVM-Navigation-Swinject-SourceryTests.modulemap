@@ -1,0 +1,6 @@
+framework module Pods_MVVM_Navigation_Swinject_SourceryTests {
+  umbrella header "Pods-MVVM-Navigation-Swinject-SourceryTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
