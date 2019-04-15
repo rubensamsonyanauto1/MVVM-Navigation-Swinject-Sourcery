@@ -85,7 +85,10 @@ struct ResolverBuilder {
                               ExampleViewControllerAssembly(),
                               RootAssembly(),
                               ListAssembly(),
-                              DetailAssembly()]).resolver
+                              DetailAssembly(),
+                              RxList.Assembly(),
+                              AlertEventResponderAssembly(),
+                              CommonEventResponderAssembly()]).resolver
     }
 }
 

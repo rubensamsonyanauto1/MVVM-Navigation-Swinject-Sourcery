@@ -5,7 +5,7 @@ import Swinject
 
 extension RootNavigation where Self: Navigation {
     func showList() {
-        let controller = resolver.resolveListViewController()
+        let controller = resolver.resolveRxListController()
         viewController.navigationController?.pushViewController(controller, animated: true)
     }
 }

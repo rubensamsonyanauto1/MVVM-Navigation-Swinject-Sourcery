@@ -1,17 +1,6 @@
 import UIKit
 import Swinject
 
-// MARK: Navigation
-
-extension ListNavigation where Self: Navigation {
-    func showDetail(with detail: Detail) {
-        let controller = resolver.resolveDetailViewController(detail: detail)
-        viewController.present(controller, animated: true)
-    }
-}
-
-private final class ListNavigationDefault: BaseNavigation, ListNavigation {}
-
 // MARK: Swinject
 
 struct ListAssembly: Assembly {
@@ -33,6 +22,8 @@ struct ListAssembly: Assembly {
         }
     }
 }
+
+final class ListNavigationDefault: BaseNavigation, ListNavigation {}
 
 extension Resolver {
     func resolveListViewController() -> ListViewController {

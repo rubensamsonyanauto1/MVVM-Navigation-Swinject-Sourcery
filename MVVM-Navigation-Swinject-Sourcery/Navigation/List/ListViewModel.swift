@@ -1,7 +1,27 @@
 import UIKit
+import RxSwift
+import RxCocoa
+
+protocol ListCellModeling {
+    var title: String { get }
+    var subTitle: String { get }
+    var description: String { get }
+}
+
+struct ListCellModel: ListCellModeling {
+    let title: String
+    let subTitle: String
+    let description: String
+
+    init(detail: Detail) {
+        self.title = detail.title
+        self.subTitle = detail.subTitle
+        self.description = detail.description
+    }
+}
 
 protocol ListViewModeling {
-    var dataSource: [String] { get }
+    var dataSource: [ListCellModeling] { get }
 
     func showDetail(for indexPath: IndexPath)
     func showAlert()
@@ -11,7 +31,6 @@ protocol ListViewModeling {
 // sourcery: inject
 final class ListViewModel: ListViewModeling {
     private let navigation: ListNavigation
-
     private let data: [Detail] = [
         Detail(title: "Tax Accountant", subTitle: "Ideal Husband, An", description: "et ultrices posuere cubilia curae nulla dapibus dolor vel est donec odio justo sollicitudin ut suscipit a feugiat et eros vestibulum ac est"),
         Detail(title: "Marketing Manager", subTitle: "Stage Fright", description: "amet sem fusce consequat nulla nisl nunc nisl duis bibendum felis sed interdum venenatis turpis enim blandit mi in porttitor"),
@@ -21,8 +40,8 @@ final class ListViewModel: ListViewModeling {
         Detail(title: "Quality Control Specialist", subTitle: "Oscar and Lucinda (a.k.a. Oscar & Lucinda)", description: "vitae ipsum aliquam non mauris morbi non lectus aliquam sit amet diam in magna bibendum imperdiet nullam orci")
     ]
 
-    var dataSource: [String] {
-        return data.map { $0.title }
+    var dataSource: [ListCellModeling] {
+        return data.map(createCellModel)
     }
 
     // sourcery: inject
@@ -36,10 +55,15 @@ final class ListViewModel: ListViewModeling {
     }
 
     func showAlert() {
-        navigation.alert(with: AlertViewModel(title: "Error", message: "Something happened", actions: [AlertActionViewModel(title: "OK")]))
+        let alertModel = AlertViewModel(title: "Error", message: "Something happened", actions: [AlertActionViewModel(title: "OK")])
+        navigation.alert(with: alertModel)
     }
 
     func goBack() {
         navigation.back()
+    }
+
+    func createCellModel(with detail: Detail) -> ListCellModeling {
+        return ListCellModel(detail: detail)
     }
 }
