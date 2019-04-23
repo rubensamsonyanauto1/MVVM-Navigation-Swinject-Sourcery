@@ -14,7 +14,7 @@ struct RxList {
         let selectedIndex: Driver<Int>
         let alert: Driver<Void>
     }
-
+    
     // MARK: View model input/output
 
     struct Context {}

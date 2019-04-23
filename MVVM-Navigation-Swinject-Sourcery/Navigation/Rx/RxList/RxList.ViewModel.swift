@@ -18,7 +18,7 @@ extension RxList {
             let helper = Helper()
             let cellEventsSetup = helper.setupCellEvents(with: eventResponder)
             let reload = Driver.merge(cellEventsSetup.reload, viewEvents.reload)
-            let dataSource = Driver.merge(reload.map { getData() }, .just(getData()))
+            let dataSource = reload.map { getData() }.startWith(getData())
 
             state = dataSource.map { ViewState(title: "RxList Example", dataSource: $0.map { CellModel(detail: $0, eventResponder: cellEventsSetup.responder) }) }
             handle(viewEvents: viewEvents, with: eventResponder, dataSource: dataSource)
