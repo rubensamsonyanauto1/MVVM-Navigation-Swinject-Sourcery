@@ -12,7 +12,7 @@ import RxSwift
 
 class ViewController: UIViewController {
 
-    lazy var resolver = ResolverBuilder().resolver
+    lazy var resolver = ResolverBuilder.resolver
     
     override func viewDidLoad() {
         super.viewDidLoad()

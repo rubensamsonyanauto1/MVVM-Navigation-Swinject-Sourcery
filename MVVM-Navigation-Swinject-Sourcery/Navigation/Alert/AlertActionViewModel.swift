@@ -11,3 +11,10 @@ struct AlertActionViewModel {
         self.handler = handler
     }
 }
+
+extension AlertActionViewModel: Equatable {
+    public static func ==(lhs: AlertActionViewModel, rhs: AlertActionViewModel) -> Bool {
+        return lhs.title == rhs.title
+            && lhs.style == rhs.style
+    }
+}

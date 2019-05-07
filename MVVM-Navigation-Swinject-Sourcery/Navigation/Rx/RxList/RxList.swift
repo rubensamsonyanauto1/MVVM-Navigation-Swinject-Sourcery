@@ -1,6 +1,8 @@
 import Foundation
 import RxCocoa
 
+
+
 struct RxList {
     // MARK: - View input/output
     struct ViewState {
@@ -22,10 +24,13 @@ struct RxList {
 
     enum Event: EventType {
         case detail(Detail)
+        case back
+        case alert(AlertViewModel)
     }
 
-    enum CellEvent: EventType {
+    enum CellEvent: EventType, Equatable {
         case track
         case reload
+        case alert(AlertViewModel)
     }
 }

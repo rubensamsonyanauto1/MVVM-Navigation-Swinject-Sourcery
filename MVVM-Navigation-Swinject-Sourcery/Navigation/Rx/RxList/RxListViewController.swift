@@ -13,7 +13,7 @@ final class RxListCell: UITableViewCell {
     @IBOutlet private weak var alertButton: UIButton!
     @IBOutlet private weak var trackButton: UIButton!
 
-    func setup(with model: RxListCellModeling) {
+    func setup(with model: RxListCellModel) {
         self.titleLabel.text = model.title
         self.subTitleLabel.text = model.subTitle
         self.descriptionLabel.text = model.description
@@ -31,8 +31,8 @@ final class RxListCell: UITableViewCell {
 
 final class RxListViewController: UIViewController {
     private let disposeBag = DisposeBag()
-    private var viewModel: RxListViewModeling!
-    var createHandler: RxListViewModeling.CreateHandler!
+    private(set) var viewModel: RxListViewModel!
+    var createHandler: RxListViewModel.CreateHandler!
 
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var reloadButton: UIButton!
@@ -49,5 +49,14 @@ final class RxListViewController: UIViewController {
         viewModel.state.map { $0.dataSource }
                        .drive(tableView.rx.items(cellIdentifier: "RxListCell", cellType: RxListCell.self)) { $2.setup(with: $1) }
                        .disposed(by: disposeBag)
+    }
+}
+
+extension Reactive where Base: UIViewController {
+    var visible: ControlEvent<Bool> {
+        let appear = sentMessage(#selector(base.viewWillAppear(_:))).map { _ in true }
+        let disappear = sentMessage(#selector(base.viewDidDisappear(_:))).map { _ in false }
+
+        return ControlEvent(events: Observable.merge(appear, disappear))
     }
 }

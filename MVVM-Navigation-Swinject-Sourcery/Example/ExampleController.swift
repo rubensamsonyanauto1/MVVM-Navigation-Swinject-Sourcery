@@ -77,19 +77,16 @@ struct ExampleViewModelBusinessRulesImpl: ExampleViewModelBusinessRules {
 }
 
 struct ResolverBuilder {
-    let resolver: Resolver
-
-    init() {
-        resolver = Assembler([DependencyAssembly(),
-                              ExampleViewModelAssembly(),
-                              ExampleViewControllerAssembly(),
-                              RootAssembly(),
-                              ListAssembly(),
-                              DetailAssembly(),
-                              RxList.Assembly(),
-                              AlertEventResponderAssembly(),
-                              CommonEventResponderAssembly()]).resolver
-    }
+    static let resolver: Resolver = Assembler([DependencyAssembly(),
+                                               ExampleViewModelAssembly(),
+                                               ExampleViewControllerAssembly(),
+                                               RootAssembly(),
+                                               ListAssembly(),
+                                               DetailAssembly(),
+                                               RxList.Assembly(),
+                                               AlertEventResponderAssembly(),
+                                               CommonEventResponderAssembly(),
+                                               DeepLinkingEventResponderAssembly()]).resolver
 }
 
 struct ExampleViewControllerAssembly: Assembly {

@@ -2,8 +2,8 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-protocol RxListViewModeling {
-    typealias CreateHandler = (RxList.ViewEvents) -> RxListViewModeling
+protocol RxListViewModel {
+    typealias CreateHandler = (RxList.ViewEvents) -> RxListViewModel
     var state: Driver<RxList.ViewState> { get }
 
     // No methods to be called from controller. Only if there is need to call from outside
@@ -11,7 +11,7 @@ protocol RxListViewModeling {
 
 extension RxList {
     /// Responders chain: RxList.EventResponder -> AlertEventResponder -> CommonEventResponder
-    struct ViewModel: RxListViewModeling, ViewModeling {
+    struct ViewModel: RxListViewModel, ViewModeling {
         let state: Driver<ViewState>
 
         init(context: Context, data: Data, viewEvents: ViewEvents, eventResponder: EventResponding) {
@@ -21,44 +21,46 @@ extension RxList {
             let dataSource = reload.map { getData() }.startWith(getData())
 
             state = dataSource.map { ViewState(title: "RxList Example", dataSource: $0.map { CellModel(detail: $0, eventResponder: cellEventsSetup.responder) }) }
-            handle(viewEvents: viewEvents, with: eventResponder, dataSource: dataSource)
+            handle(viewEvents: viewEvents, with: eventResponder, dataSource: dataSource, helper: helper)
         }
 
-        func handle(viewEvents: ViewEvents, with eventResponder: EventResponding, dataSource: Driver<[Detail]>) {
-            let events = Driver<EventType>.merge(
-                viewEvents.back.map { CommonEvent.back },
-                viewEvents.selectedIndex.withLatestFrom(dataSource) { $1[$0] }.map { Event.detail($0) },
-                viewEvents.alert.map { AlertEvent.present(AlertViewModel(title: "Error", 
-                                                                         message: "Something happened", 
-                                                                         actions: [AlertActionViewModel(title: "OK")])) }
+        private func handle(viewEvents: ViewEvents, with eventResponder: EventResponding, dataSource: Driver<[Detail]>, helper: Helper) {
+            let events = Driver<Event>.merge(
+                viewEvents.back.map { .back },
+                viewEvents.selectedIndex.withLatestFrom(dataSource) { $1[$0] }.map { .detail($0) },
+                viewEvents.alert.map { .alert(helper.makeAlertViewModel()) }
             )
             eventResponder.handle(events: events)
         }
 
         private struct Helper {
             func setupCellEvents(with next: EventResponding?) -> (responder: EventResponding, reload: Driver<Void>) {
-                let closureEventResponder = ClosureEventResponder(next: next) { event in
-                    guard let event = event as? CellEvent else { return false }
-
-                    switch event {
+                let inlineResponder = InlineEventResponder<CellEvent>(next: next) {
+                    switch $0 {
                     case .track:
                         print("Track some event")
-                        return true
+                        return nil
                     case .reload:
-                        return false
+                        return $0
+                    case .alert(let viewModel):
+                        return Event.alert(viewModel)
                     }
                 }
+                let reload = inlineResponder.takeEvent(where: { CellEvent.reload == $0 }).map { _ in () }
 
-                let rxEventResponder =  RxEventResponder(next: closureEventResponder)
-                let reload = rxEventResponder.event(where: { if case CellEvent.reload = $0 { return true } else { return false } }).map { _ in () }
+                return (inlineResponder, reload)
+            }
 
-                return (rxEventResponder, reload)
+            func makeAlertViewModel() -> AlertViewModel {
+                return AlertViewModel(title: "Error",
+                                      message: "Something happened",
+                                      actions: [AlertActionViewModel(title: "OK")])
             }
         }
     }
 }
 
-protocol RxListCellModeling {
+protocol RxListCellModel {
     var title: String { get }
     var subTitle: String { get }
     var description: String { get }
@@ -69,7 +71,7 @@ protocol RxListCellModeling {
 }
 
 extension RxList {
-    struct CellModel: RxListCellModeling {
+    struct CellModel: RxListCellModel {
         let title: String
         let subTitle: String
         let description: String
@@ -83,12 +85,14 @@ extension RxList {
             self.subTitle = detail.subTitle
             self.description = detail.description
 
-            let events = Driver<EventType>.merge(
-                reload.asDriver(onErrorJustReturn: ()).map { CellEvent.reload },
-                alert.asDriver(onErrorJustReturn: ()).map { AlertEvent.present(AlertViewModel(title: "Alert from Cell",
-                                                                         message: "Something happened",
-                                                                         actions: [AlertActionViewModel(title: "OK")])) },
-                track.asDriver(onErrorJustReturn: ()).map { CellEvent.track }
+            let alertModel = AlertViewModel(title: "Alert from Cell",
+                                            message: "Something happened",
+                                            actions: [AlertActionViewModel(title: "OK")])
+
+            let events = Driver<CellEvent>.merge(
+                reload.asDriver(onErrorJustReturn: ()).map { .reload },
+                alert.asDriver(onErrorJustReturn: ()).map { .alert(alertModel) },
+                track.asDriver(onErrorJustReturn: ()).map { .track }
             )
             eventResponder.handle(events: events)
         }

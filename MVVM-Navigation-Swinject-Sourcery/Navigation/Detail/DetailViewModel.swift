@@ -1,4 +1,6 @@
 import Foundation
+import RxSwift
+import RxCocoa
 
 protocol DetailViewModeling {
     var title: String { get }
